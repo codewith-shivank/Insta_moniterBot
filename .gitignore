@@ -1,0 +1,8 @@
+.env
+monitor.db
+*.db
+*.db-journal
+__pycache__/
+*.py[cod]
+.venv/
+venv/
