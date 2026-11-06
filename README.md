@@ -17,19 +17,40 @@ The bot is designed for long-running hosting, with SQLite persistence, automatic
 - `/list` — show configured monitors.
 - `/history` — show recent status changes and monitoring events.
 - `/account username` — show an Instagram-style profile card.
+- `/watch usernames` — monitor multiple active accounts at once (space-separated).
+- `/trend username` — show a followers trend graph for a monitored account.
+- `/stats` — show a server dashboard summary of monitors and events.
+- `/export` — export the full monitoring history as a CSV file.
+- `/mute username minutes` — mute alerts for an account for a period.
+- `/unmute username` — unmute alerts for an account immediately.
+- `/mention username mention` — set a role/user ping sent on alerts for an account.
+- `/interval username seconds` — set a per-monitor check interval (0 = global default).
+- `/digest action` — send a digest now, or schedule daily/weekly digests.
 - Accepts an Instagram username or a profile URL wherever a username is requested.
 - Uses confirmation checks before sending a status-transition alert to reduce false positives.
+- Optional stats-change alerts when an active account's followers, following, or post count moves by a configurable threshold.
+- Optional profile-change alerts when an active account's bio, full name, verified badge, or external URL changes.
+- Optional quiet hours window to suppress non-critical alerts during set times.
+- Optional health-check HTTP endpoint for uptime monitoring on deployments.
 - Stores monitors and event history in SQLite and resumes saved monitors after a restart.
 
 ### Discord notifications and presentation
 
 - Sends automatic alerts when a confirmed status transition is detected.
+- Sends rename alerts when an account reappears under a new handle (same Instagram user id) instead of a false ban alert.
+- Sends stats-change alerts (followers/following/posts) without extra Instagram requests, using values already stored each cycle.
+- Optional daily or weekly digest summaries of monitoring activity.
+- Per-monitor alert muting and configurable role/user pings on alerts.
+- Saves a profile snapshot (photo + bio) to disk on each transition for a forensic trail.
 - Uses mobile-friendly embeds with clear status labels, timestamps, and useful empty and error states.
 - Provides an Instagram-style profile card with a profile photo and available public statistics when Instagram makes that information accessible.
 
 ### Operational behavior
 
 - Treats temporary network, login, and rate-limit failures as `UNKNOWN`, not as an account ban.
+- Detects HTTP 429 responses and applies a backoff window instead of hammering Instagram.
+- Per-monitor check intervals with a single tick-based loop (no per-account tasks).
+- Concurrent checks with a bounded semaphore so cycle time stays manageable as monitors grow.
 - Retries transient Discord gateway and network errors with bounded backoff.
 - Stops on an invalid Discord token instead of retrying indefinitely.
 - Can run directly as a Python worker or in Docker. A Render Blueprint is included for deployments that use the supplied `render.yaml`.
@@ -154,13 +175,44 @@ The following settings are optional. Use only the variables supported by your ch
 INSTAGRAM_SESSIONID=your_sessionid
 
 # Example tuning values
-INSTAGRAM_CACHE_SECONDS=60
 INSTAGRAM_RETRY_COUNT=2
-INSTAGRAM_FETCH_LATEST_POST=0
 CONFIRMATION_CHECKS=3
 CHECK_INTERVAL_SECONDS=180
 INSTAGRAM_CHECK_TIMEOUT_SECONDS=25
+
+# How many monitors are checked in parallel each cycle
+MAX_CONCURRENT_CHECKS=3
+
+# The loop tick interval (affects per-monitor interval granularity)
+CYCLE_TICK_SECONDS=30
+
+# Stats-change alerts (notify when followers/following/posts move materially)
+STATS_ALERTS_ENABLED=true
+STATS_ALERT_MIN_DELTA=10
+STATS_ALERT_COOLDOWN_SECONDS=1800
+
+# Profile-metadata change alerts (bio/fullname/verified/external URL)
+PROFILE_CHANGE_ALERTS_ENABLED=true
+
+# Quiet hours in server local time, e.g. "23:00-08:00". Empty = always alert.
+QUIET_HOURS=
+
+# On-disk profile snapshots (photo + bio) on transitions
+SNAPSHOT_DIR=snapshots
+
+# Health-check HTTP server. Set to a port to enable.
+HEALTH_PORT=0
+
+# Digest scheduling: "daily", "weekly", or "" (disabled)
+DIGEST_SCHEDULE=
+
+# Instagram rate-limit backoff (seconds)
+INSTAGRAM_RATE_LIMIT_BACKOFF_SECONDS=120
 ```
+
+### Stats-change alerts
+
+In addition to ban/recovery transitions, the bot can alert when an active account's followers, following, or post count changes by at least `STATS_ALERT_MIN_DELTA` between checks. These alerts are rate-limited per username by `STATS_ALERT_COOLDOWN_SECONDS` and only fire while an account stays in the same state, so they don't interfere with ban/recovery detection. Set `STATS_ALERTS_ENABLED=false` to disable them entirely. The comparison uses the stats already stored on each check, so no extra Instagram requests are made.
 
 Keep `.env` private. An Instagram session cookie can grant access to your account, so treat it like a password. Do not paste it into public issues, screenshots, logs, or source control. A logged-in session may improve access in some cases, but it does not guarantee that Instagram checks will work.
 
@@ -269,6 +321,3 @@ If a Discord token, Instagram session cookie, or webhook URL is accidentally exp
 ## 9. License and responsible use
 
 Use and modify this project for your own Discord server. Respect Instagram's Terms of Use, rate limits, privacy settings, and applicable laws. Do not use the bot to harass, target, or make consequential decisions about people based on an inferred account status.
-#   I n s t a _ m o n i t e r B o t  
- #   I n s t a _ m o n i t e r B o t  
- 

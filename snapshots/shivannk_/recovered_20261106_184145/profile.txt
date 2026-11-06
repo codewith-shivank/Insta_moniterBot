@@ -1,0 +1,15 @@
+username: shivannk_
+event: recovered
+detected_at: 2026-11-06T18:41:45.848882+00:00
+followers: 84
+following: 113
+posts: 0
+is_verified: False
+fullname: _Sʜɪᴠᴀɴᴋ Mᴀᴜʀʏᴀᴠᴀɴsʜɪ!
+external_url: 
+userid: 20523265213
+
+biography:
+ironic
+@klrahul 
+@imbhuvi

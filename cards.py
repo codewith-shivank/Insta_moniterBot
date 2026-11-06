@@ -10,6 +10,8 @@ def _font(size, bold=False):
     candidates = [
         "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
         "/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf",
+        "C:/Windows/Fonts/arialbd.ttf" if bold else "C:/Windows/Fonts/arial.ttf",
+        "C:/Windows/Fonts/segoeuib.ttf" if bold else "C:/Windows/Fonts/segoeui.ttf",
     ]
     for p in candidates:
         if Path(p).exists():
@@ -27,7 +29,11 @@ def _avatar(url, unavailable=False):
         d.line((200, 20, 20, 200), fill=(225, 35, 40), width=18)
         return im
     try:
-        with urllib.request.urlopen(url, timeout=12) as r:
+        req = urllib.request.Request(url, headers={
+            # Instagram's CDN rejects urllib's default User-Agent.
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        })
+        with urllib.request.urlopen(req, timeout=12) as r:
             data = r.read()
         from io import BytesIO
         im = Image.open(BytesIO(data)).convert("RGB")
@@ -60,14 +66,9 @@ def create_profile_card(profile, username, unavailable=False):
     followers = getattr(profile, "followers", 0) if profile else 0
     following = getattr(profile, "following", 0) if profile else 0
 
-    def num(v):
-        if v >= 1_000_000:
-            return f"{v:,}"
-        return f"{v:,}"
-
-    draw.text((345, 190), f"{num(posts)} posts", fill=white, font=_font(27))
-    draw.text((545, 190), f"{num(followers)} followers", fill=white, font=_font(27))
-    draw.text((780, 190), f"{num(following)} following", fill=white, font=_font(27))
+    draw.text((345, 190), f"{posts:,} posts", fill=white, font=_font(27))
+    draw.text((545, 190), f"{followers:,} followers", fill=white, font=_font(27))
+    draw.text((780, 190), f"{following:,} following", fill=white, font=_font(27))
 
     if unavailable:
         draw.text((345, 250), "UserNotFound", fill=gray, font=_font(22))

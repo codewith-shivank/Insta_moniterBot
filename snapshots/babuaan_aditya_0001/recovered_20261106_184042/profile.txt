@@ -1,0 +1,14 @@
+username: babuaan_aditya_0001
+event: recovered
+detected_at: 2026-11-06T18:40:42.896004+00:00
+followers: 661
+following: 100
+posts: 0
+is_verified: False
+fullname: 🇹‌🇭‌🇦‌🇰‌🇺‌🇷‌ ᴀᴅɪᴛyᴀ ꜱɪɴɢʜ 😈🕊️
+external_url: 
+userid: 46388993682
+
+biography:
+"Smiling outside, dying inside.
+  Silent tears, loud heart."❤️‍🩹

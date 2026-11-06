@@ -1,0 +1,14 @@
+username: adarshyadav45__
+event: recovered
+detected_at: 2026-11-06T18:41:36.083212+00:00
+followers: 1611
+following: 100
+posts: 0
+is_verified: False
+fullname: Adarshhhh
+external_url: 
+userid: 31277121425
+
+biography:
+"हनुमंत सदा सहायते" 
+@adarshyadav27_
